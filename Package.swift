@@ -5,10 +5,9 @@ import PackageDescription
 let package = Package(
     name: "relux-network-monitor",
     platforms: [
-        .iOS(.v13),
-        .macOS(.v10_15),
-        .tvOS(.v13),
-        .watchOS(.v6)
+        .iOS(.v14),
+        .tvOS(.v14),
+        .watchOS(.v7)
     ],
     products: [
         .library(
