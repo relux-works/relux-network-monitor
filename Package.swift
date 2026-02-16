@@ -16,13 +16,13 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/ivalx1s/darwin-relux.git", .upToNextMajor(from: "8.1.0")),
+        .package(url: "https://github.com/relux-works/swift-relux.git", .upToNextMajor(from: "8.1.0")),
     ],
     targets: [
         .target(
             name: "ReluxNetworkMonitor",
             dependencies: [
-                .product(name: "Relux", package: "darwin-relux"),
+                .product(name: "Relux", package: "swift-relux"),
             ],
             path: "Sources"
         )
