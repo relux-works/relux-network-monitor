@@ -7,10 +7,11 @@ extension NetworkMonitor {
         public let states: [any Relux.AnyState]
         public let sagas: [any Relux.Saga]
 
-        public init() async {
+        public init(dispatcher: Relux.Dispatcher? = nil) async {
             self.sagas = [
                 await NetworkMonitor.Business.Saga(
-                    svc: NetworkMonitor.Business.Service()
+                    svc: NetworkMonitor.Business.Service(),
+                    dispatcher: dispatcher
                 )
             ]
 

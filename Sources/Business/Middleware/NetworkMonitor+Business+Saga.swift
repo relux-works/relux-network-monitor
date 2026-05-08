@@ -9,10 +9,20 @@ extension NetworkMonitor.Business {
 
 extension NetworkMonitor.Business {
     public actor Saga {
+        public let dispatcher: Relux.Dispatcher
+
         private let svc: IService
         private var pipelines: Set<AnyCancellable> = []
 
-        public init(svc: IService) async {
+        public init(
+            svc: IService,
+            dispatcher: Relux.Dispatcher? = nil
+        ) async {
+            if let dispatcher {
+                self.dispatcher = dispatcher
+            } else {
+                self.dispatcher = await Self.defaultDispatcher
+            }
             self.svc = svc
             await setupSubscriptions()
         }

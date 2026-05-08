@@ -1,111 +1,55 @@
-# iOS Feature Management
+# ReluxNetworkMonitor
 
-## Adding Dependency to the Project
+Relux module for observing iOS network reachability and exposing the current
+network status through Relux state.
 
-- Add the dependency to the project
-- Connect to Relux:
+## Installation
 
-  ```swift
-  Relux.register(FeatureManagement.module())
-  ```
-
-- Configure in the project
-
-## Feature Configuration
-
-### Define Features
+Add the package to the host app or package:
 
 ```swift
-extension FeatureManagement.Business.Model {
-    enum MyAppFeature: FeatureManagement.Business.Model.Feature.Key {
-        case debugMenu = "debugMenu"
-        case feature1 = "feature1"
+.package(url: "https://github.com/relux-works/relux-network-monitor.git", from: "1.0.1")
+```
+
+For local development in the Tap2Cash package set, use the sibling checkout:
+
+```swift
+.package(path: "../relux-network-monitor")
+```
+
+## Relux Registration
+
+Register the module in the app Relux composition root:
+
+```swift
+await Relux(...)
+    .register {
+        await NetworkMonitor.Module()
     }
+```
+
+Start or stop network observation by dispatching effects:
+
+```swift
+await actions {
+    NetworkMonitor.Business.Effect.startObserveNetConditions
 }
 ```
 
-### Add Protocols
+Consume the state from SwiftUI as a Relux environment object:
 
 ```swift
-extension FeatureManagement.Business.Model.MyAppFeature: CaseIterable {}
-extension FeatureManagement.Business.Model.MyAppFeature: RawRepresentable {}
-
-extension FeatureManagement.Business.Model.MyAppFeature: ExpressibleByStringLiteral {
-    init(stringLiteral value: String) {
-        self.init(rawValue: value)!
-    }
-}
-
-extension FeatureManagement.Business.Model.MyAppFeature: Codable {}
-
-extension FeatureManagement.Business.Model.MyAppFeature: Identifiable {
-    var id: FeatureManagement.Business.Model.Feature.Key { rawValue }
-}
+@EnvironmentObject private var networkState: NetworkMonitor.UI.State
 ```
 
-## Extend `FeatureManagement.ViewState`
+## Public State
 
-```swift
-extension FeatureManagement.UI.State {
-    var allMembraneFeatures: [FeatureManagement.Business.Model.MyAppFeature] {
-        self.allFeatures
-            .compactMap { FeatureManagement.Business.Model.MyAppFeature(rawValue: $0.key) }
-    }
+`NetworkMonitor.Business.Model.Status` exposes:
 
-    func check(expression: FeatureManagement.Business.Model.FeatureComposite) -> Bool {
-        expression.check(against: enabledFeatures)
-    }
-}
-```
+- `connected`
+- `expensive`
+- `wasChanged`
+- `vpnEnabled`
 
-### Convert Sequences
-
-```swift
-extension Sequence where Element == FeatureManagement.Business.Model.Feature.Key {
-    var asMyAppFeatures: [FeatureManagement.Business.Model.MyAppFeature] {
-        self.compactMap { .init(rawValue: $0) }
-    }
-}
-```
-
-## Define Exact Feature Expressions
-
-```swift
-extension FeatureManagement.Business.Model.FeatureComposite {
-    static func exactFeature(_ feature: FeatureManagement.Business.Model.MyAppFeature) -> Self {
-        .feature(feature.rawValue)
-    }
-}
-```
-
-## Propagate Features to the Root View
-
-### Connect `envObject` to View
-
-```swift
-@EnvironmentObject private var featuresState: FeatureManagement.UI.State
-```
-
-### Add Feature Propagating Modifier to View
-
-```swift
-.bindEnabledFeatures(featureState: featuresState)
-```
-
-## Using Features in the UI
-
-```swift
-Group {
-    divider
-    Relux.NavigationLink(page: .membraneApp(page: .account(page: .debugMenu))) {
-        CustomMenuItem(model: SettingPage.debug.model)
-    }
-}
-.presentIf(
-    .anySatisfy(composites: [
-        .exactFeature(.debugMenu),
-        .condition({ DeviceEnv.isSimulator })
-    ])
-)
-```
-
+`NetworkMonitor.Business.State.networkNotAvailable` is derived from
+`networkStatus.connected`.
